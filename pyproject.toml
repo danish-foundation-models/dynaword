@@ -47,3 +47,6 @@ extend-exclude = ["*.md"]
 [tool.ruff.lint]
 # the rule set the repos have always used; newer ruff versions enable many more by default
 select = ["E4", "E7", "E9", "F"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
