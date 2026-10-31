@@ -91,7 +91,10 @@ def create_token_dataframe(filename: str = "descriptive_stats.json") -> pd.DataF
         file_data = get_file_at_commit(commit_hash, filename)
         if file_data and "number_of_tokens" in file_data:
             try:
-                date = datetime.fromisoformat(date_str.split(" ")[0])
+                # Keep the time of day. Several releases can land on one day, and a
+                # date truncated to the day gives them one sort key, so the plot can
+                # order them arbitrarily and draw the corpus shrinking.
+                date = datetime.fromisoformat(" ".join(date_str.split(" ")[:2]))
                 data.append(
                     {
                         "date": date,
