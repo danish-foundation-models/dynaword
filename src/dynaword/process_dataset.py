@@ -1,5 +1,6 @@
 """"""
 
+import hashlib
 import logging
 from functools import partial
 from typing import Any
@@ -39,19 +40,27 @@ def add_token_count(
     return ds
 
 
+def _text_digest(text: str) -> bytes:
+    return hashlib.blake2b(text.encode("utf-8", "surrogatepass"), digest_size=16).digest()
+
+
 def _filter_duplicates(example: dict[str, Any], seen_set: set) -> bool:
-    if example[ColumnNames.text.value] in seen_set:
+    # a digest, not the text: `seen_set` accumulates one key per document, and
+    # holding the texts themselves is the whole corpus in memory (a whole-book
+    # source is tens of GB and the filter is then OOM-killed mid-run)
+    digest = _text_digest(example[ColumnNames.text.value])
+    if digest in seen_set:
         return False
-    seen_set.add(example[ColumnNames.text.value])
+    seen_set.add(digest)
     return True
 
 
 def remove_duplicate_text(ds: Dataset) -> Dataset:
     logger.info("Removing duplicate texts")
-    seen_texts = set()
+    seen_digests: set[bytes] = set()
     len_ds = len(ds)
     ds = ds.filter(
-        partial(_filter_duplicates, seen_set=seen_texts),
+        partial(_filter_duplicates, seen_set=seen_digests),
         desc="Removing duplicates",
         num_proc=1,  # num_proc=1 to ensure seen_set is consistent
     )
