@@ -7,6 +7,7 @@ license = "CC0-1.0"  # same as the Dynaword datasets
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
+    "dacy>=2.9.0", # historical Danish vocabulary for OCR filtering
     # for commands
     "datasets>=3.0.0", # loading and validating datasets
     "openai>=1.79.0", # OpenAI-compatible Propella inference example
